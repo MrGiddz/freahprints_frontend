@@ -33,15 +33,14 @@ Handle API errors and display user-friendly messages
   ├── history/           # Search history page
   ├── page.tsx          # Home page
   ├── layout.tsx        # Layout file
-/api
-  ├── users.ts          # API route to fetch GitHub user details
-/components
-  ├── SearchBar.tsx     # Search input component
-  ├── UserCard.tsx      # Component to display user details
+  ├── components/  
+        ├── search-field.tsx     # Search input component
+        ├── button.tsx      # Button Component
+        ├── navbar.tsx      # Navbar Component
+  ├── globals.css                 # Global styles
 /lib
-  ├── api.ts            # Functions for fetching data from GitHub API
+  ├── utils.ts            # Util function
 /public                 # Static assets
-/styles                 # Global styles
 /tests                  # Unit and integration tests
 ```
 

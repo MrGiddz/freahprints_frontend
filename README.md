@@ -21,6 +21,7 @@ Handle API errors and display user-friendly messages
 | **Next.js**      | React-based frontend framework |
 | **TypeScript**   | Type safety and better developer experience |
 | **TailwindCSS**  | Styling framework for UI development |
+| **Styled Components** | Styling framework for UI development |
 | **GitHub API**   | Data source for fetching user details |
 | **Jest & Testing Library** | Unit and integration testing |
 

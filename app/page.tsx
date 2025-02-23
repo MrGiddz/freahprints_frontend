@@ -1,101 +1,139 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import Button from "./components/button";
+import SearchField from "./components/search-field";
+
+type UserDataType = {
+  username: string;
+  avatarUrl: string;
+  profileUrl: string;
+  bio: string;
+  repos: string[];
+  followers: string;
+  following: string;
+};
+
+export const fetchGitHubUser = async (username: string) => {
+  try {
+    const response = await fetch(`https://api.github.com/users/${username}`);
+
+    if (!response.ok) {
+      throw new Error("User not found");
+    }
+
+    const data = await response.json();
+    return {
+      username: data.login,
+      avatarUrl: data.avatar_url,
+      profileUrl: data.html_url,
+      bio: data.bio,
+      repos: data.public_repos,
+      followers: data.followers,
+      following: data.following,
+    };
+  } catch (error) {
+    console.error("Error fetching GitHub user:", error);
+    return null;
+  }
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [searchTerm, setSearchTerm] = useState("");
+  const [userData, setUserData] = useState<UserDataType | null>(null);
+  const [error, setError] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null; 
+
+
+  
+
+  const handleSearch = async () => {
+    setError("");
+    setUserData(null);
+
+    if (!searchTerm.trim()) {
+      setError("Please enter a GitHub username");
+      return;
+    }
+
+    const user = await fetchGitHubUser(searchTerm);
+    if (!user) {
+      setError("GitHub user not found");
+      saveToHistory(searchTerm, "GitHub user not found");
+      return;
+    }
+
+    setUserData(user);
+    saveToHistory(searchTerm, user);
+  };
+
+  const saveToHistory = (term: string, user: UserDataType | string) => {
+    const history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
+    history.unshift({ term, user });
+    localStorage.setItem("searchHistory", JSON.stringify(history));
+  };
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      {/* Search Box */}
+      <h1 className="mx-auto text-xl font-semibold text-center my-4 text-gray-500">
+        Search Github User
+      </h1>
+      <div className="p-6 w-full max-w-md">
+        <SearchField
+          onChange={(e) => setSearchTerm(e.target.value)}
+          value={searchTerm}
+          name="search"
+          placeholder="Search"
+        />
+        <Button onClick={handleSearch}>Search</Button>
+      </div>
+
+      {/* Search Results */}
+      <div className="mt-6 w-full max-w-md p-6">
+        <h2 className="text-lg font-semibold mb-4">Search Results</h2>
+
+        {error && (
+          <p className="text-red-500 bg-red-100 border border-red-400 px-4 py-2 rounded-md mt-2">
+            {error}
+          </p>
+        )}
+
+        {userData ? (
+          <div className="grid grid-cols-2 gap-4 bg-white p-6 border">
+            <div className="flex flex-col items-start col-span-1">
+              <p className="text-gray-700 font-medium mb-2 text-left">
+                User Image
+              </p>
+              <div className="w-28 h-28 border rounded-md overflow-hidden">
+                <Image
+                  src={userData.avatarUrl}
+                  alt="User Avatar"
+                  width={112}
+                  height={112}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col items-start col-span-1">
+              <p className="text-gray-700 font-medium mb-2">GitHub Username</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {userData.username}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div></div>
+        )}
+      </div>
     </div>
   );
 }
